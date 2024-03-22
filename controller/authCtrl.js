@@ -61,7 +61,7 @@ const login = async(req,res) => {
         //to check email is exists or not
         let extEmail = await UserModel.findOne({email})
         if(!extEmail)
-            return res.status(StatusCode.NOT_FOUND).json({status:false, msg:`${email} id doesnt exists`})
+            return res.status(StatusCodes.NOT_FOUND).json({status:false, msg:`${email} id doesn't exists`})
         
         // validate the password
         let passVal = await bcryptjs.compare(password,extEmail.password)
@@ -108,8 +108,18 @@ const logout = async(req,res) => {
 //verify user authentication
 const verifyUser = async(req,res) => {
     try{
+        //reading the incoming user id through middleware
+        const id = req.userId
 
-        res.json({msg :"verify user"})
+        //read the user data from db collection
+        let extUser = await UserModel.findById(id).select('-password')
+
+        //if user id not exists
+        if(!extUser)
+        return res.status(StatusCodes.NOT_FOUND).json({status: false, msg: `requested user id not exists`})
+
+        //final respone
+        res.status(StatusCodes.OK).json({status:true, msg:"user verified successfully", user:extUser})
     } catch (err) {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({status: false, msg:err.message})
     }
