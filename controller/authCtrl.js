@@ -82,6 +82,7 @@ const login = async(req,res) => {
 
         //store token in cookies
         res.cookie("authToken", authToken, {
+            path:`/`,
             httpOnly:true,
             signed:true,
             maxAge: 1 * 24 * 60 * 60 * 1000

@@ -1,7 +1,27 @@
 import React from 'react'
-import {NavLink} from 'react-router-dom'
+import {NavLink,useNavigate} from 'react-router-dom'
+import {useAuth} from '../Hooks/authHook'
+import {toast} from 'react-toastify'
+import axios from 'axios'
 
 function Menu() {
+    const {contextToken, setToken, setCurrentUser,setLogin} = useAuth()
+    const navigate = useNavigate()
+
+    const logout = async () => {
+        if(window.confirm(`Are you sure to logout`)){
+            await axios.get(`/api/auth/logout`)
+            .then(res => {
+                toast.success(res.data.msg)
+                navigate(`/login`)
+                setToken(false)
+                setCurrentUser(false)
+                setLogin(false)
+            }).catch(err => toast.error(err.response.data.msg))
+        }else {
+            toast.warning("logout terminated")
+        }
+    }
   return (
     <header>
         <nav className="navbar navbar-expand-md navbar-dark bg-theme">
@@ -18,16 +38,25 @@ function Menu() {
                 <h6 className="text-dark display-6 offcanvas-title">MERN-Project</h6>
                 <button className="btn-close" data-bs-dismiss="offcanvas"></button>
             </div>
-            <div className="offcanvas-body">
+            <div className="offcanvas-body mt-3 mb-3">
                 <div className="list-group text-center">
                     <NavLink to={`/`} className="list-group-item">Home</NavLink>
                     <NavLink to={`/about`} className="list-group-item">About</NavLink>
                     <NavLink to={`/contact`} className="list-group-item">Contact</NavLink>
                 </div>
-                <div className="list-group text-center mt-3">
-                    <NavLink to={`/login`} className="list-group-item">Login</NavLink>
-                    <NavLink to={`/register`} className="list-group-item">Register</NavLink>
-                </div>
+                {
+                    contextToken?.token && contextToken?.login ? (
+                        <div className="list-group text-center mt-3">
+                            <NavLink to={`/dashboard`} className="list-group-item">Dashboard</NavLink>
+                            <button onClick={logout} className="btn btn-danger mt-2">Logout</button>
+                        </div>
+                    ) : (
+                        <div className="list-group text-center mt-3">
+                            <NavLink to={`/login`} className="list-group-item">Login</NavLink>
+                            <NavLink to={`/register`} className="list-group-item">Register</NavLink>
+                        </div>
+                    )
+                }
             </div>
         </div>
     </header>
